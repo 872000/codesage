@@ -1,0 +1,3 @@
+# Runtime dependency: used only for the complexity chart generator
+# (scripts/gen_chart.py). The analyzer itself is pure stdlib.
+matplotlib==3.6.3
