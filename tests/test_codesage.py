@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from codesage.analyzer import analyze_file, analyze_source
+from codesage.cli import main
 from codesage.complexity import analyze_function
 from codesage.reporter import render_html, render_markdown
 from codesage.smells import Config, find_duplicate_blocks
@@ -245,3 +246,19 @@ def test_findings_are_severity_sorted():
     order = {"critical": 0, "warning": 1, "info": 2}
     severities = [order[f.severity] for f in report.sorted_findings()]
     assert severities == sorted(severities)
+
+
+# ---------------------------------------------------------------------------
+# CLI exit codes (the CI-friendly contract advertised in the README)
+# ---------------------------------------------------------------------------
+
+def test_cli_returns_zero_for_clean_sample():
+    assert main(["review", str(SAMPLES / "clean.py")]) == 0
+
+
+def test_cli_returns_nonzero_for_critical_findings():
+    assert main(["review", str(SAMPLES / "smelly.py")]) == 1
+
+
+def test_cli_returns_two_for_missing_target():
+    assert main(["review", "no-such-file.py"]) == 2
