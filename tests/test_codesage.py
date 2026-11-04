@@ -14,7 +14,7 @@ from codesage.analyzer import analyze_file, analyze_source
 from codesage.cli import main
 from codesage.complexity import analyze_function
 from codesage.reporter import render_html, render_markdown
-from codesage.smells import Config, find_duplicate_blocks
+from codesage.smells import Config, check_long_file, find_duplicate_blocks
 
 SAMPLES = Path(__file__).resolve().parent.parent / "samples"
 
@@ -262,3 +262,12 @@ def test_cli_returns_nonzero_for_critical_findings():
 
 def test_cli_returns_two_for_missing_target():
     assert main(["review", "no-such-file.py"]) == 2
+
+
+def test_long_file_detector_fires_above_limit():
+    cfg = Config(max_file_lines=10, critical_file_lines=100)
+    findings = check_long_file(50, "big.py", cfg)
+    assert len(findings) == 1
+    assert findings[0].rule_id == "long-file"
+    assert findings[0].severity == "warning"
+    assert check_long_file(10, "small.py", cfg) == []
